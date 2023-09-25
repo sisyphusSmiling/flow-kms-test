@@ -2,6 +2,6 @@
 ///
 transaction {
     prepare(signer: AuthAccount) {
-        log("SUCCESS")
+        log("[SUCCESS] Dry run successfully executed!")
     }
 }
