@@ -5,8 +5,36 @@
 ## Pre-requisites
 
 - [Install Flow CLI](https://developers.flow.com/tools/flow-cli/install)
-- [Have a configured assymetric signing key configured in Google Cloud's KMS](https://cloud.google.com/kms/docs/create-key#kms-create-symmetric-encrypt-decrypt-console)
+- [Have a configured assymetric signing key configured in Google Cloud's
+  KMS](https://cloud.google.com/kms/docs/create-key#kms-create-symmetric-encrypt-decrypt-console)
 - [Install gcloud CLI](https://cloud.google.com/sdk/docs/install)
+
+### Optional setup
+
+If you would like to enable more seamless KMS signing after configuring gcloud CLI, you can export Application Default
+Credentials (ADC) as an environment variable to your machine.
+
+Simply run:
+
+```sh
+gcloud auth application-default login
+```
+
+Your browser will likely open, asking you to login to your GCP account and allowing ADC (or similar) to your account.
+After confirming, your terminal will output something along the lines of:
+
+```sh
+Credentials saved to file: [<HOME_DIR>/.config/gcloud/application_default_credentials.json]
+```
+
+Copy that path and export the following environment variable:
+
+```sh
+export GOOGLE_APPLICATION_CREDENTIALS=<YOUR_ADC_PATH>
+```
+
+Completing this setup will avoid the need to authorize KMS signing via Google OAuth in-browser, favoring instead your
+local ADC.
 
 ## Overview
 
@@ -23,7 +51,8 @@ From your key view in the GCP console, you'll have the option to view the public
 
 ![View Public Key in GCP Console](./resources/public_key.png)
 
-Copy that to [`encoded_public_key.example.pem`](./encoded_public_key.example.pem) and rename to `encoded_public_key.pem`.
+Copy that to [`encoded_public_key.example.pem`](./encoded_public_key.example.pem) and rename to
+`encoded_public_key.pem`.
 
 To get the decoded public key string, we'll run the Flow CLI command:
 
@@ -58,10 +87,12 @@ You'll get an output denoting your account address and the info of the key that 
 
 ### Update your [flow.json](./flow.json)
 
-Next, we need to add the account we just created to our project config so we can submit a test transaction using Flow CLI. For that, we'll need two things:
+Next, we need to add the account we just created to our project config so we can submit a test transaction using Flow
+CLI. For that, we'll need two things:
 
 - The account address - the one we just created in emulator
-- Your KMS key resource name - this is typically of the format `projects/<PROJECT_NAME>/locations/global/keyRings/<KEY_RING_NAME>/cryptoKeys/<KEY_NAME>/cryptoKeyVersions/<VERSION>`
+- Your KMS key resource name - this is typically of the format
+  `projects/<PROJECT_NAME>/locations/global/keyRings/<KEY_RING_NAME>/cryptoKeys/<KEY_NAME>/cryptoKeyVersions/<VERSION>`
 
 You can find your key's resource name in the key view of your GCP console
 
@@ -88,12 +119,30 @@ The `accounts` field in [`flow.json`](./flow.json) should look like the followin
 
 ### Dry run
 
-And finally, we can sign a dry run transaction. For the sake of testing, we'll use a simple log statement in [`dry_run.cdc`](./transactions/dry_run.cdc) with the following command:
+And finally, we can sign a dry run transaction. For the sake of testing, we'll use a simple log statement in
+[`dry_run.cdc`](./transactions/dry_run.cdc) with the following command:
 
 ```sh
 flow transactions send ./transactions/dry_run.cdc --signer kms-test-emulator
 ```
 
-To acquire an authorizing signature, you'll be taken to a Google OAuth page where you can enter your GCP account credentials and click 'Allow' to authorize the dry run transaction signature.
+To acquire an authorizing signature, you'll be taken to a Google OAuth page where you can enter your GCP account
+credentials and click 'Allow' to authorize the dry run transaction signature.
 
-If you configured your key correctly, you should see the transaction executed successfully and a log statement in your emulator terminal window.
+If you configured your key correctly, you should see the transaction executed successfully and a log statement in your
+emulator terminal window.
+
+## Resources
+
+### Flow CLI
+
+- [Example `flow.json` config for Google
+  KMS](https://developers.flow.com/next/tools/flow-cli/flow.json/configuration#advanced-format-1)
+
+### GCP
+
+- [Creating a key](https://cloud.google.com/kms/docs/create-key)
+- [Retrieving a public key](https://cloud.google.com/kms/docs/retrieve-public-key)
+- [Getting a KMS resource ID](https://cloud.google.com/kms/docs/getting-resource-ids)
+- [Configuring Application Default
+  Credentials](https://cloud.google.com/docs/authentication/application-default-credentials)
